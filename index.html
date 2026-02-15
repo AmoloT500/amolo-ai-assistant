@@ -414,7 +414,7 @@
         // ==================== API KEY MANAGEMENT ====================
         function saveApiKey() {
             const key = $.apiInput.value.trim();
-            if (key && key.startsWith('AIza')) {
+            if (key && key.startsWith('sk-')) {
                 state.apiKey = key;
                 localStorage.setItem('amolo_api', key);
                 $.apiBanner.classList.add('hidden');
