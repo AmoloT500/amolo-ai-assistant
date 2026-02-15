@@ -1,3 +1,3 @@
 # amolo-ai-assistant
 AMOLO.AI Chatbot Widget
-AIzaSyA6gqU-XiUYDz5sZgjvtCVSeclIO0IyNWc
+AIzaSyB3rS70l3A-hhs4Av7YgtM_Q3yvRzDsc_s
