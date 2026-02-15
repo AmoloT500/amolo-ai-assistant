@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMOLO.AI Chatbot v2.0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        .animate-bounce-dot {
+            animation: bounce 0.6s infinite;
+        }
+        .animate-bounce-dot:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+        .animate-bounce-dot:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-200 via-gray-300 to-purple-200 min-h-screen">
+    <div class="flex flex-col h-screen">
+        <!-- Header -->
+        <div class="flex flex-col items-center pt-12 pb-8">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-12 h-12 bg-blue-700 rounded-lg flex items-center justify-center shadow-md">
+                    <span class="text-white font-bold text-xl">A</span>
+                </div>
+                <span class="text-2xl font-semibold text-blue-700">AMOLO.AI</span>
+            </div>
+            
+            <div id="welcome-section" class="text-center">
+                <div class="flex items-center justify-center gap-2 text-gray-600 mb-3">
+                    <svg class="w-4 h-4 text-orange-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                    </svg>
+                    <span class="text-sm">Hi there</span>
+                </div>
+                <h1 class="text-3xl font-normal text-gray-800">Where should we start?</h1>
+            </div>
+        </div>
+
+        <!-- API Key Setup Banner -->
+        <div id="api-setup-banner" class="mx-4 mb-4">
+            <div class="max-w-4xl mx-auto bg-yellow-100 border-2 border-yellow-500 rounded-lg p-4 shadow-lg">
+                <p class="text-sm text-yellow-900 mb-3 font-semibold">
+                    ⚠️ SETUP REQUIRED: Add your Google Gemini API key to start chatting
+                </p>
+                <div class="flex gap-2 mb-3">
+                    <input 
+                        type="text" 
+                        id="api-key-input" 
+                        placeholder="Paste your API key here (starts with AIza...)"
+                        class="flex-1 px-4 py-2 border-2 border-yellow-500 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button 
+                        id="save-api-key-btn"
+                        class="px-6 py-2 bg-blue-600 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors shadow-md"
+                    >
+                        Save Key
+                    </button>
+                </div>
+                <div class="bg-yellow-50 border border-yellow-400 rounded p-3 text-xs text-yellow-900">
+                    <p class="font-semibold mb-1">📝 How to get your FREE API key:</p>
+                    <ol class="list-decimal ml-4 space-y-1">
+                        <li>Visit: <a href="https://makersuite.google.com/app/apikey" target="_blank" class="underline font-semibold">Google AI Studio</a></li>
+                        <li>Sign in with your Google account</li>
+                        <li>Click "Create API Key"</li>
+                        <li>Copy the key and paste it above</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages Container -->
+        <div id="messages-container" class="flex-1 overflow-y-auto px-4 pb-4">
+            <div class="max-w-4xl mx-auto space-y-4" id="messages"></div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="p-4 pb-6">
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-white/90 backdrop-blur-sm rounded-full shadow-lg flex items-center gap-3 px-6 py-3">
+                    <input
+                        type="text"
+                        id="message-input"
+                        placeholder="Ask AMOLO.AI anything..."
+                        class="flex-1 bg-transparent outline-none text-gray-800 placeholder-gray-400 text-base"
+                    />
+                    <button
+                        id="send-button"
+                        class="w-10 h-10 rounded-full bg-purple-300 hover:bg-purple-400 disabled:bg-gray-200 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+                    >
+                        <svg class="w-5 h-5 text-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="pb-4 text-center">
+            <p class="text-xs text-gray-500">Powered by Google Gemini AI • v2.0</p>
+        </div>
+    </div>
+
+    <script>
+        console.log('AMOLO.AI v2.0 loaded');
+        
+        const messagesContainer = document.getElementById('messages');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const welcomeSection = document.getElementById('welcome-section');
+        const apiSetupBanner = document.getElementById('api-setup-banner');
+        const apiKeyInput = document.getElementById('api-key-input');
+        const saveApiKeyBtn = document.getElementById('save-api-key-btn');
+        
+        let isLoading = false;
+        let apiKey = localStorage.getItem('amolo_gemini_api_key') || '';
+
+        // Check if API key exists on load
+        if (apiKey) {
+            apiSetupBanner.classList.add('hidden');
+            console.log('API key found');
+        } else {
+            console.log('No API key found - showing banner');
+        }
+
+        // Save API key
+        saveApiKeyBtn.addEventListener('click', () => {
+            const key = apiKeyInput.value.trim();
+            if (key) {
+                if (key.startsWith('AIza')) {
+                    localStorage.setItem('amolo_gemini_api_key', key);
+                    apiKey = key;
+                    apiSetupBanner.classList.add('hidden');
+                    alert('✅ API key saved! You can now start chatting.');
+                    console.log('API key saved successfully');
+                } else {
+                    alert('⚠️ Invalid API key format. It should start with "AIza"');
+                }
+            } else {
+                alert('⚠️ Please paste your API key first');
+            }
+        });
+
+        function addMessage(content, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex gap-3 ${type === 'user' ? 'justify-end' : 'justify-start'}`;
+            
+            if (type === 'ai') {
+                messageDiv.innerHTML = `
+                    <div class="w-10 h-10 bg-blue-700 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span class="text-white font-semibold text-sm">A</span>
+                    </div>
+                    <div class="max-w-2xl px-5 py-4 rounded-2xl bg-white/90 backdrop-blur-sm text-gray-800 shadow-sm">
+                        <p class="text-base leading-relaxed whitespace-pre-wrap">${content}</p>
+                    </div>
+                `;
+            } else if (type === 'error') {
+                messageDiv.innerHTML = `
+                    <div class="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span class="text-white font-semibold text-sm">!</span>
+                    </div>
+                    <div class="max-w-2xl px-5 py-4 rounded-2xl bg-red-50 border-2 border-red-300 text-red-800 shadow-sm">
+                        <p class="text-sm leading-relaxed font-semibold">❌ Error: ${content}</p>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="max-w-2xl px-5 py-4 rounded-2xl bg-blue-600 text-white shadow-md">
+                        <p class="text-base leading-relaxed">${content}</p>
+                    </div>
+                    <div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span class="text-white font-semibold text-sm">U</span>
+                    </div>
+                `;
+            }
+            
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function addLoadingIndicator() {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = 'loading-indicator';
+            loadingDiv.className = 'flex gap-3';
+            loadingDiv.innerHTML = `
+                <div class="w-10 h-10 bg-blue-700 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="text-white font-semibold text-sm">A</span>
+                </div>
+                <div class="bg-white/90 backdrop-blur-sm px-5 py-4 rounded-2xl shadow-sm">
+                    <div class="flex gap-1">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce-dot"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce-dot"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce-dot"></div>
+                    </div>
+                </div>
+            `;
+            messagesContainer.appendChild(loadingDiv);
+            scrollToBottom();
+        }
+
+        function removeLoadingIndicator() {
+            const loadingDiv = document.getElementById('loading-indicator');
+            if (loadingDiv) loadingDiv.remove();
+        }
+
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        async function callGeminiAPI(userMessage) {
+            if (!apiKey) {
+                throw new Error('Please add your API key using the yellow banner above.');
+            }
+
+            console.log('Calling Gemini API...');
+            const response = await fetch(
+                `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+                {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{ text: userMessage }]
+                        }]
+                    })
+                }
+            );
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                console.error('API Error:', errorData);
+                throw new Error(errorData.error?.message || 'API request failed. Check your API key.');
+            }
+
+            const data = await response.json();
+            console.log('API Response received');
+            return data.candidates[0].content.parts[0].text;
+        }
+
+        async function handleSend() {
+            const message = messageInput.value.trim();
+            if (!message || isLoading) return;
+
+            if (welcomeSection) {
+                welcomeSection.style.display = 'none';
+            }
+
+            addMessage(message, 'user');
+            messageInput.value = '';
+            
+            isLoading = true;
+            sendButton.disabled = true;
+            addLoadingIndicator();
+
+            try {
+                const aiResponse = await callGeminiAPI(message);
+                removeLoadingIndicator();
+                addMessage(aiResponse, 'ai');
+            } catch (error) {
+                removeLoadingIndicator();
+                addMessage(error.message, 'error');
+                
+                if (!apiKey) {
+                    apiSetupBanner.classList.remove('hidden');
+                    scrollToTop();
+                }
+            }
+
+            isLoading = false;
+            sendButton.disabled = false;
+            messageInput.focus();
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        sendButton.addEventListener('click', handleSend);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+
+        messageInput.focus();
+    </script>
+</body>
+</html>
