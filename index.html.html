@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMOLO.AI - Your AI Assistant</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ebf0 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .header {
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .header.minimized {
+            transform: scale(0.8);
+            margin-bottom: -20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+        }
+
+        .logo-text {
+            font-size: 28px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .greeting {
+            font-size: 18px;
+            color: #5f6368;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .greeting-icon {
+            font-size: 20px;
+        }
+
+        h1 {
+            font-size: 36px;
+            color: #202124;
+            font-weight: 400;
+        }
+
+        .chat-input-section {
+            width: 100%;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 16px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .input-field {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 16px;
+            color: #202124;
+            background: transparent;
+        }
+
+        .input-field::placeholder {
+            color: #9aa0a6;
+        }
+
+        .input-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon-button {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: transparent;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #5f6368;
+            transition: background 0.2s;
+        }
+
+        .icon-button:hover:not(:disabled) {
+            background: #f1f3f4;
+        }
+
+        .icon-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .send-button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .send-button:hover:not(:disabled) {
+            background: linear-gradient(135deg, #5568d3 0%, #653a8b 100%);
+        }
+
+        .suggestions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            transition: opacity 0.3s ease;
+        }
+
+        .suggestions.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .suggestion-chip {
+            padding: 10px 20px;
+            border: 1px solid #dadce0;
+            border-radius: 24px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            color: #5f6368;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .suggestion-chip:hover {
+            background: #f8f9fa;
+            border-color: #5f6368;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-messages {
+            width: 100%;
+            max-height: 500px;
+            overflow-y: auto;
+            display: none;
+            flex-direction: column;
+            gap: 16px;
+            padding: 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-messages.active {
+            display: flex;
+        }
+
+        .message {
+            display: flex;
+            gap: 12px;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.user {
+            justify-content: flex-end;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .message.assistant .message-avatar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .message.user .message-avatar {
+            background: #34a853;
+            color: white;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 18px;
+            font-size: 15px;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .message.assistant .message-content {
+            background: #f8f9fa;
+            color: #202124;
+            border: 1px solid #e8eaed;
+        }
+
+        .message.user .message-content {
+            background: #667eea;
+            color: white;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #9aa0a6;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .powered-by {
+            text-align: center;
+            color: #9aa0a6;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 28px;
+            }
+
+            .suggestion-chip {
+                font-size: 13px;
+                padding: 8px 16px;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header" id="header">
+            <div class="logo">
+                <div class="logo-icon">A</div>
+                <div class="logo-text">AMOLO.AI</div>
+            </div>
+            <div class="greeting">
+                <span class="greeting-icon">✨</span>
+                <span>Hi there</span>
+            </div>
+            <h1>Where should we start?</h1>
+        </div>
+
+        <div id="chatMessages" class="chat-messages"></div>
+
+        <div class="chat-input-section">
+            <div class="input-wrapper">
+                <input 
+                    type="text" 
+                    class="input-field" 
+                    id="messageInput"
+                    placeholder="Ask AMOLO.AI anything..."
+                    autocomplete="off"
+                />
+                <div class="input-controls">
+                    <button class="icon-button send-button" id="sendButton" title="Send message">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="suggestions" id="suggestions">
+            <button class="suggestion-chip" data-prompt="Explain quantum computing in simple terms">
+                <span>🔬</span>
+                Explain quantum computing
+            </button>
+            <button class="suggestion-chip" data-prompt="Write a short story about adventure">
+                <span>✍️</span>
+                Write a story
+            </button>
+            <button class="suggestion-chip" data-prompt="Help me plan a healthy meal">
+                <span>🍽️</span>
+                Plan a meal
+            </button>
+            <button class="suggestion-chip" data-prompt="Teach me a new skill">
+                <span>📚</span>
+                Learn something new
+            </button>
+            <button class="suggestion-chip" data-prompt="Give me creative ideas">
+                <span>💡</span>
+                Get ideas
+            </button>
+        </div>
+
+        <div class="powered-by">
+            Powered by Google Gemini AI
+        </div>
+    </div>
+
+    <script type="module">
+        // Configuration - Using the correct v1beta API
+        const API_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
+        const API_KEY = 'AIzaSyB3rS70l3A-hhs4Av7YgtM_Q3yvRzDsc_s';
+
+        // Elements
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const chatMessages = document.getElementById('chatMessages');
+        const suggestions = document.getElementById('suggestions');
+        const header = document.getElementById('header');
+
+        // Conversation history
+        let conversationHistory = [];
+
+        // Handle suggestion chips
+        document.querySelectorAll('.suggestion-chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                const prompt = chip.getAttribute('data-prompt');
+                messageInput.value = prompt;
+                sendMessage();
+            });
+        });
+
+        // Handle Enter key
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Handle send button
+        sendButton.addEventListener('click', () => {
+            sendMessage();
+        });
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            // Show chat interface
+            suggestions.classList.add('hidden');
+            chatMessages.classList.add('active');
+            header.classList.add('minimized');
+
+            // Add user message
+            addMessage(message, 'user');
+            messageInput.value = '';
+            messageInput.disabled = true;
+            sendButton.disabled = true;
+
+            // Add to conversation history
+            conversationHistory.push({
+                role: 'user',
+                parts: [{ text: message }]
+            });
+
+            // Show typing indicator
+            addTypingIndicator();
+
+            try {
+                // Call Gemini API
+                const response = await fetch(`${API_ENDPOINT}?key=${API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: conversationHistory
+                    })
+                });
+
+                removeTypingIndicator();
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error?.message || 'API request failed');
+                }
+
+                const data = await response.json();
+                const aiResponse = data.candidates[0]?.content?.parts[0]?.text || 'Sorry, I could not generate a response.';
+
+                // Add to conversation history
+                conversationHistory.push({
+                    role: 'model',
+                    parts: [{ text: aiResponse }]
+                });
+
+                addMessage(aiResponse, 'assistant');
+
+            } catch (error) {
+                removeTypingIndicator();
+                console.error('Error:', error);
+                addMessage(`Sorry, something went wrong: ${error.message}\n\nPlease try again.`, 'assistant', true);
+            } finally {
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                messageInput.focus();
+            }
+        }
+
+        function addMessage(text, sender, isError = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}`;
+
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = sender === 'user' ? 'U' : 'A';
+
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            content.textContent = text;
+
+            if (isError) {
+                content.style.background = '#fce8e6';
+                content.style.color = '#c5221f';
+                content.style.border = '1px solid #c5221f';
+            }
+
+            if (sender === 'user') {
+                messageDiv.appendChild(content);
+                messageDiv.appendChild(avatar);
+            } else {
+                messageDiv.appendChild(avatar);
+                messageDiv.appendChild(content);
+            }
+
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function addTypingIndicator() {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message assistant';
+            messageDiv.id = 'typingIndicator';
+
+            const avatar = document.createElement('div');
+            avatar.className = 'message-avatar';
+            avatar.textContent = 'A';
+
+            const content = document.createElement('div');
+            content.className = 'message-content typing-indicator';
+            content.innerHTML = '<div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>';
+
+            messageDiv.appendChild(avatar);
+            messageDiv.appendChild(content);
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const indicator = document.getElementById('typingIndicator');
+            if (indicator) {
+                indicator.remove();
+            }
+        }
+
+        // Auto-focus on input
+        messageInput.focus();
+    </script>
+</body>
+</html>
