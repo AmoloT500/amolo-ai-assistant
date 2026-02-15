@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMOLO.AI Chatbot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+        .animate-bounce-dot {
+            animation: bounce 0.6s infinite;
+        }
+        .animate-bounce-dot:nth-child(2) {
+            animation-delay: 0.15s;
+        }
+        .animate-bounce-dot:nth-child(3) {
+            animation-delay: 0.3s;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-200 via-gray-300 to-purple-200 min-h-screen">
+    <div class="flex flex-col h-screen">
+        <!-- Header -->
+        <div class="flex flex-col items-center pt-12 pb-8">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-12 h-12 bg-blue-700 rounded-lg flex items-center justify-center shadow-md">
+                    <span class="text-white font-bold text-xl">A</span>
+                </div>
+                <span class="text-2xl font-semibold text-blue-700">AMOLO.AI</span>
+            </div>
+            
+            <div id="welcome-section" class="text-center">
+                <div class="flex items-center justify-center gap-2 text-gray-600 mb-3">
+                    <svg class="w-4 h-4 text-orange-400" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                    </svg>
+                    <span class="text-sm">Hi there</span>
+                </div>
+                <h1 class="text-3xl font-normal text-gray-800">Where should we start?</h1>
+            </div>
+        </div>
+
+        <!-- Messages Container -->
+        <div id="messages-container" class="flex-1 overflow-y-auto px-4 pb-4">
+            <div class="max-w-4xl mx-auto space-y-4" id="messages">
+                <!-- Messages will be added here -->
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="p-4 pb-6">
+            <div class="max-w-4xl mx-auto">
+                <div class="bg-white/90 backdrop-blur-sm rounded-full shadow-lg flex items-center gap-3 px-6 py-3">
+                    <input
+                        type="text"
+                        id="message-input"
+                        placeholder="Ask AMOLO.AI anything..."
+                        class="flex-1 bg-transparent outline-none text-gray-800 placeholder-gray-400 text-base"
+                    />
+                    <button
+                        id="send-button"
+                        class="w-10 h-10 rounded-full bg-purple-300 hover:bg-purple-400 disabled:bg-gray-200 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+                    >
+                        <svg class="w-5 h-5 text-purple-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="pb-4 text-center">
+            <p class="text-xs text-gray-500">Powered by Google Gemini AI</p>
+        </div>
+    </div>
+
+    <script>
+        const messagesContainer = document.getElementById('messages');
+        const messageInput = document.getElementById('message-input');
+        const sendButton = document.getElementById('send-button');
+        const welcomeSection = document.getElementById('welcome-section');
+        let isLoading = false;
+
+        // Sample AI responses
+        const aiResponses = [
+            "I'm here to help! What would you like to know?",
+            "That's a great question. Let me help you with that.",
+            "I understand what you're asking. Here's what I can tell you...",
+            "Thanks for asking! I'd be happy to assist you with that.",
+            "Interesting question! Let me provide some information on that topic."
+        ];
+
+        function addMessage(content, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex gap-3 ${type === 'user' ? 'justify-end' : 'justify-start'}`;
+            
+            if (type === 'ai') {
+                messageDiv.innerHTML = `
+                    <div class="w-10 h-10 bg-blue-700 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span class="text-white font-semibold text-sm">A</span>
+                    </div>
+                    <div class="max-w-2xl px-5 py-4 rounded-2xl bg-white/90 backdrop-blur-sm text-gray-800 shadow-sm">
+                        <p class="text-base leading-relaxed">${content}</p>
+                    </div>
+                `;
+            } else {
+                messageDiv.innerHTML = `
+                    <div class="max-w-2xl px-5 py-4 rounded-2xl bg-blue-600 text-white shadow-md">
+                        <p class="text-base leading-relaxed">${content}</p>
+                    </div>
+                    <div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span class="text-white font-semibold text-sm">U</span>
+                    </div>
+                `;
+            }
+            
+            messagesContainer.appendChild(messageDiv);
+            scrollToBottom();
+        }
+
+        function addLoadingIndicator() {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = 'loading-indicator';
+            loadingDiv.className = 'flex gap-3';
+            loadingDiv.innerHTML = `
+                <div class="w-10 h-10 bg-blue-700 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span class="text-white font-semibold text-sm">A</span>
+                </div>
+                <div class="bg-white/90 backdrop-blur-sm px-5 py-4 rounded-2xl shadow-sm">
+                    <div class="flex gap-1">
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce-dot"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce-dot"></div>
+                        <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce-dot"></div>
+                    </div>
+                </div>
+            `;
+            messagesContainer.appendChild(loadingDiv);
+            scrollToBottom();
+        }
+
+        function removeLoadingIndicator() {
+            const loadingDiv = document.getElementById('loading-indicator');
+            if (loadingDiv) {
+                loadingDiv.remove();
+            }
+        }
+
+        function scrollToBottom() {
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        async function handleSend() {
+            const message = messageInput.value.trim();
+            if (!message || isLoading) return;
+
+            // Hide welcome section after first message
+            if (welcomeSection) {
+                welcomeSection.style.display = 'none';
+            }
+
+            // Add user message
+            addMessage(message, 'user');
+            messageInput.value = '';
+            
+            // Set loading state
+            isLoading = true;
+            sendButton.disabled = true;
+            addLoadingIndicator();
+
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
+
+            // Remove loading indicator
+            removeLoadingIndicator();
+
+            // Add AI response
+            const randomResponse = aiResponses[Math.floor(Math.random() * aiResponses.length)];
+            addMessage(randomResponse, 'ai');
+
+            // Reset loading state
+            isLoading = false;
+            sendButton.disabled = false;
+            messageInput.focus();
+        }
+
+        // Event listeners
+        sendButton.addEventListener('click', handleSend);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+            }
+        });
+
+        // Focus input on load
+        messageInput.focus();
+    </script>
+</body>
+</html>
