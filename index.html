@@ -368,7 +368,8 @@
                 ...state.conversationHistory.slice(-10) // Last 10 messages for context
             ];
             
-            const response = await fetch('https://api.openai-proxy.com/v1/chat/completions', {
+           const response = await fetch("https://api.openai.com/v1/chat/completions", {
+
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
