@@ -303,15 +303,6 @@
             }
         }
 
-        .error-message {
-            color: #c5221f;
-            font-size: 13px;
-            padding: 8px 12px;
-            background: #fce8e6;
-            border-radius: 8px;
-            margin-top: 8px;
-        }
-
         .powered-by {
             text-align: center;
             color: #9aa0a6;
@@ -399,8 +390,8 @@
     </div>
 
     <script type="module">
-        // Configuration - API key is pre-configured
-        const API_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+        // Configuration - Updated to use Gemini 1.5 Flash
+        const API_ENDPOINT = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent';
         const API_KEY = 'AIzaSyB3rS70l3A-hhs4Av7YgtM_Q3yvRzDsc_s';
 
         // Elements
@@ -467,13 +458,7 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        contents: conversationHistory,
-                        generationConfig: {
-                            temperature: 0.7,
-                            topK: 40,
-                            topP: 0.95,
-                            maxOutputTokens: 1024,
-                        }
+                        contents: conversationHistory
                     })
                 });
 
@@ -498,7 +483,7 @@
             } catch (error) {
                 removeTypingIndicator();
                 console.error('Error:', error);
-                addMessage(`Error: ${error.message}\n\nPlease check your internet connection and try again.`, 'assistant', true);
+                addMessage(`Sorry, something went wrong: ${error.message}\n\nPlease try again.`, 'assistant', true);
             } finally {
                 messageInput.disabled = false;
                 sendButton.disabled = false;
