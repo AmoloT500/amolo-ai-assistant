@@ -427,9 +427,15 @@
                 const error = await response.json();
                 throw new Error(error.error || 'API request failed');
             }
+           const data = await response.json();
+           const reply = data.message || "No response from AI";
+
+if (!reply) {
+  add("AI returned empty response.", false);
+  return;
+}
+ 
             
-            const data = await response.json();
-            const reply = data.message;
         }
 
         // ==================== MESSAGES ====================
