@@ -306,15 +306,16 @@
         }
 
         // ==================== MESSAGE HANDLING ====================
-        async function callOpenAI(userMessage) {
+        async function sendMessage() {
+    const content = document.getElementById("message-input").value.trim();
+    if (!content) return;
 
-    const msg = userMessage.toLowerCase();
-    let reply = "";
+    addMessage(content, "user");
+    document.getElementById("message-input").value = "";
 
-    // greetings
-    if (msg.includes("hello") || msg.includes("hi")) {
-        reply = "Hello 👋 Welcome to AMOLO.AI — Global intelligence built from Africa. How can I assist you today?";
-    }
+    const reply = await callOpenAI(content);
+    addMessage(reply, "assistant");
+}
 
     // who are you
     else if (msg.includes("who are you") || msg.includes("what is amolo")) {
