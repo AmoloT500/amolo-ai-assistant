@@ -1,700 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="AMOLO.AI - Africa's most accessible AI assistant">
-    <title>AMOLO.AI - Your Professional AI Assistant</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { 
-            font-family: 'Inter', sans-serif; 
-            box-sizing: border-box;
-        }
-        
-        /* Animations */
-        @keyframes slideUp { 
-            from { opacity: 0; transform: translateY(20px); } 
-            to { opacity: 1; transform: translateY(0); } 
-        }
-        @keyframes pulse { 
-            0%, 100% { opacity: 1; } 
-            50% { opacity: 0.5; } 
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-        
-        .message-enter { animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .thinking-dot { animation: pulse 1.4s ease-in-out infinite; }
-        .thinking-dot:nth-child(2) { animation-delay: 0.2s; }
-        .thinking-dot:nth-child(3) { animation-delay: 0.4s; }
-        .fade-in { animation: fadeIn 0.3s ease-in; }
-        
-        /* Dark Mode */
-        .dark { background: #0a0a0a; color: #e5e5e5; }
-        .dark .bg-white { background: #1a1a1a !important; }
-        .dark .bg-gray-50 { background: #0a0a0a !important; }
-        .dark .text-gray-800 { color: #e5e5e5 !important; }
-        .dark .text-gray-900 { color: #f5f5f5 !important; }
-        .dark .text-gray-600 { color: #a0a0a0 !important; }
-        .dark .text-gray-500 { color: #888 !important; }
-        .dark .border-gray-200 { border-color: #2a2a2a !important; }
-        .dark .border-gray-300 { border-color: #333 !important; }
-        .dark input, .dark textarea { 
-            background: #1a1a1a !important; 
-            color: #e5e5e5 !important; 
-            border-color: #2a2a2a !important; 
-        }
-        .dark input::placeholder, .dark textarea::placeholder { color: #666 !important; }
-        .dark .message-user { background: #2563eb !important; }
-        .dark .message-ai { background: #1a1a1a !important; border-color: #2a2a2a !important; }
-        .dark .hover\:bg-gray-100:hover { background: #2a2a2a !important; }
-        .dark .bg-blue-50 { background: #1a2332 !important; }
-        .dark .text-blue-900 { color: #93c5fd !important; }
-        .dark .text-blue-700 { color: #60a5fa !important; }
-        .dark .border-blue-200 { border-color: #1e3a5f !important; }
-        
-        /* Messages */
-        .message-ai { 
-            background: #f8f9fa; 
-            border: 1px solid #e5e7eb; 
-        }
-        .message-user { 
-            background: #2563eb; 
-            color: white; 
-        }
-        
-        /* Code Blocks */
-        .code-block { 
-            background: #1e1e1e; 
-            color: #d4d4d4; 
-            border-radius: 8px; 
-            padding: 16px; 
-            margin: 12px 0; 
-            overflow-x: auto; 
-            font-family: 'Courier New', monospace; 
-            font-size: 13px; 
-            position: relative; 
-        }
-        .code-block pre { 
-            margin: 0; 
-            white-space: pre-wrap; 
-            word-wrap: break-word; 
-        }
-        .code-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 8px 12px; 
-            background: #2d2d2d; 
-            border-radius: 8px 8px 0 0; 
-            margin: -16px -16px 12px -16px; 
-        }
-        .code-lang { 
-            color: #888; 
-            font-size: 12px; 
-            font-weight: 600; 
-            text-transform: uppercase; 
-        }
-        .copy-btn { 
-            background: #3a3a3a; 
-            color: #fff; 
-            padding: 4px 12px; 
-            border-radius: 4px; 
-            font-size: 11px; 
-            cursor: pointer; 
-            border: none; 
-            transition: background 0.2s; 
-        }
-        .copy-btn:hover { background: #4a4a4a; }
-        .copy-btn.copied { background: #22c55e; }
-        
-        /* Markdown */
-        .message-content h1 { font-size: 24px; font-weight: 700; margin: 16px 0 8px 0; }
-        .message-content h2 { font-size: 20px; font-weight: 600; margin: 14px 0 7px 0; }
-        .message-content h3 { font-size: 18px; font-weight: 600; margin: 12px 0 6px 0; }
-        .message-content p { margin: 8px 0; line-height: 1.6; }
-        .message-content ul, .message-content ol { margin: 8px 0; padding-left: 24px; }
-        .message-content li { margin: 4px 0; line-height: 1.6; }
-        .message-content a { color: #2563eb; text-decoration: underline; }
-        .message-content blockquote { 
-            border-left: 3px solid #d1d5db; 
-            padding-left: 16px; 
-            margin: 12px 0; 
-            color: #6b7280; 
-            font-style: italic; 
-        }
-        .message-content code:not(.code-block code) { 
-            background: #f3f4f6; 
-            padding: 2px 6px; 
-            border-radius: 3px; 
-            font-size: 13px; 
-            font-family: 'Courier New', monospace; 
-            color: #dc2626; 
-        }
-        .dark .message-content code:not(.code-block code) { 
-            background: #2a2a2a; 
-            color: #fca5a5; 
-        }
-        .message-content table { 
-            border-collapse: collapse; 
-            width: 100%; 
-            margin: 12px 0; 
-        }
-        .message-content th, .message-content td { 
-            border: 1px solid #e5e7eb; 
-            padding: 8px 12px; 
-            text-align: left; 
-        }
-        .message-content th { 
-            background: #f9fafb; 
-            font-weight: 600; 
-        }
-        .dark .message-content th, .dark .message-content td { 
-            border-color: #2a2a2a; 
-        }
-        .dark .message-content th { 
-            background: #1a1a1a; 
-        }
-        .dark .message-content blockquote {
-            border-left-color: #4a4a4a;
-            color: #a0a0a0;
-        }
-        
-        /* Scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .dark ::-webkit-scrollbar-thumb { background: #334155; }
-        .dark ::-webkit-scrollbar-thumb:hover { background: #475569; }
-        
-        /* Focus States */
-        input:focus, textarea:focus, button:focus { 
-            outline: 2px solid #2563eb; 
-            outline-offset: 2px; 
-        }
-        
-        /* Transitions */
-        * { 
-            transition: background-color 0.2s, color 0.2s, border-color 0.2s; 
-        }
-        
-        /* Loading */
-        .spinner {
-            border: 2px solid #f3f3f3;
-            border-top: 2px solid #2563eb;
-            border-radius: 50%;
-            width: 16px;
-            height: 16px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AMOLO.AI</title>
+<script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="min-h-screen bg-gray-50 transition-colors duration-300" id="app">
-    <!-- Notification Container -->
-    <div id="notification-container" class="fixed top-4 right-4 z-50 space-y-2"></div>
 
-    <div class="flex flex-col h-screen max-w-6xl mx-auto">
-        <!-- Header -->
-        <header class="flex items-center justify-between px-4 sm:px-6 py-4 bg-white border-b border-gray-200">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg">
-                    <span class="text-white font-bold text-lg">A</span>
-                </div>
-                <div>
-                    <h1 class="text-xl font-semibold text-gray-900">AMOLO.AI</h1>
-                    <p class="text-xs text-gray-500">Africa's AI Assistant</p>
-                </div>
-            </div>
-            
-            <div class="flex items-center gap-2">
-                <button id="new-chat-btn" class="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="New Chat (Ctrl+N)">
-                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                    </svg>
-                </button>
-                
-                <button id="export-btn" class="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Export Chat">
-                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                    </svg>
-                </button>
-                
-                <button id="theme-toggle" class="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="Toggle Theme (Ctrl+D)">
-                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-                    </svg>
-                </button>
-            </div>
-        </header>
-        
-        <!-- Messages Area -->
-        <div id="messages-container" class="flex-1 overflow-y-auto px-4 sm:px-6 py-6">
-            <div id="messages" class="max-w-3xl mx-auto space-y-6">
-                <!-- Welcome Screen -->
-                <div id="welcome" class="text-center py-8 sm:py-12 fade-in">
-                    <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                        <span class="text-white font-bold text-2xl">A</span>
-                    </div>
-                    <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Welcome to AMOLO.AI</h2>
-                    <p class="text-gray-600 mb-8 px-4">Africa's most accessible AI assistant. Ask me anything!</p>
-                    
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 max-w-2xl mx-auto px-4">
-                        <button class="prompt-card p-4 text-left border border-gray-200 rounded-xl hover:border-blue-500 hover:shadow-md transition-all" data-prompt="Explain quantum computing in simple terms">
-                            <div class="text-2xl mb-2">💡</div>
-                            <h3 class="font-semibold text-gray-900 mb-1 text-sm sm:text-base">Explain complex topics</h3>
-                            <p class="text-xs sm:text-sm text-gray-600">Break down difficult concepts simply</p>
-                        </button>
-                        <button class="prompt-card p-4 text-left border border-gray-200 rounded-xl hover:border-blue-500 hover:shadow-md transition-all" data-prompt="Write a Python function to calculate fibonacci numbers">
-                            <div class="text-2xl mb-2">💻</div>
-                            <h3 class="font-semibold text-gray-900 mb-1 text-sm sm:text-base">Write & debug code</h3>
-                            <p class="text-xs sm:text-sm text-gray-600">Get help with any programming language</p>
-                        </button>
-                        <button class="prompt-card p-4 text-left border border-gray-200 rounded-xl hover:border-blue-500 hover:shadow-md transition-all" data-prompt="Draft a professional email requesting a meeting">
-                            <div class="text-2xl mb-2">📝</div>
-                            <h3 class="font-semibold text-gray-900 mb-1 text-sm sm:text-base">Draft & edit content</h3>
-                            <p class="text-xs sm:text-sm text-gray-600">Create emails, articles, documents</p>
-                        </button>
-                        <button class="prompt-card p-4 text-left border border-gray-200 rounded-xl hover:border-blue-500 hover:shadow-md transition-all" data-prompt="Help me brainstorm creative solutions for productivity">
-                            <div class="text-2xl mb-2">🎯</div>
-                            <h3 class="font-semibold text-gray-900 mb-1 text-sm sm:text-base">Solve problems</h3>
-                            <p class="text-xs sm:text-sm text-gray-600">Get strategic advice and solutions</p>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Input Area -->
-        <div class="px-4 sm:px-6 py-4 bg-white border-t border-gray-200">
-            <div class="max-w-3xl mx-auto">
-                <div class="relative">
-                    <textarea 
-                        id="message-input" 
-                        rows="1"
-                        placeholder="Message AMOLO.AI..."
-                        class="w-full px-4 py-3 pr-14 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 placeholder-gray-400 bg-white text-sm sm:text-base"
-                        style="max-height: 200px;"
-                    ></textarea>
-                    
-                    <button id="send-btn" class="absolute right-2 bottom-2 p-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-                        </svg>
-                    </button>
-                </div>
-                
-                <div class="flex items-center justify-between mt-2 px-1">
-                    <p class="text-xs text-gray-500">
-                        <kbd class="px-1.5 py-0.5 bg-gray-100 border border-gray-300 rounded text-xs hidden sm:inline">Enter</kbd>
-                        <span class="hidden sm:inline"> to send • </span>
-                        <kbd class="px-1.5 py-0.5 bg-gray-100 border border-gray-300 rounded text-xs hidden sm:inline">Shift+Enter</kbd>
-                        <span class="hidden sm:inline"> for new line</span>
-                    </p>
-                    <p class="text-xs text-gray-400" id="char-count">0</p>
-                </div>
-            </div>
-        </div>
-    </div>
+<body class="bg-gray-100 h-screen flex flex-col">
 
-    <script>
-        // ==================== STATE ====================
-        const state = {
-            darkMode: localStorage.getItem('amolo_theme') === 'dark',
-            messages: JSON.parse(localStorage.getItem('amolo_msgs') || '[]'),
-            history: [],
-            isLoading: false
-        };
+<header class="bg-black text-white p-4 text-xl font-bold">
+AMOLO.AI — Global Intelligence
+</header>
 
-        // ==================== DOM ====================
-        const $ = {
-            app: document.getElementById('app'),
-            messages: document.getElementById('messages'),
-            input: document.getElementById('message-input'),
-            sendBtn: document.getElementById('send-btn'),
-            welcome: document.getElementById('welcome'),
-            themeToggle: document.getElementById('theme-toggle'),
-            newChatBtn: document.getElementById('new-chat-btn'),
-            exportBtn: document.getElementById('export-btn'),
-            charCount: document.getElementById('char-count'),
-            notifContainer: document.getElementById('notification-container')
-        };
+<div id="chat" class="flex-1 overflow-y-auto p-6 space-y-4"></div>
 
-        // ==================== INIT ====================
-        function init() {
-            if (state.darkMode) $.app.classList.add('dark');
-            loadMessages();
-            setupEvents();
-            $.input.focus();
-        }
+<div class="p-4 bg-white flex gap-2">
+<input id="msg" class="flex-1 border p-3 rounded-lg" placeholder="Message AMOLO.AI..." />
+<button onclick="send()" class="bg-black text-white px-6 rounded-lg">Send</button>
+</div>
 
-        // ==================== EVENTS ====================
-        function setupEvents() {
-            $.sendBtn.addEventListener('click', send);
-            $.input.addEventListener('keydown', e => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    send();
-                }
-            });
-            $.input.addEventListener('input', () => {
-                autoResize();
-                $.charCount.textContent = $.input.value.length;
-            });
-            $.themeToggle.addEventListener('click', toggleTheme);
-            $.newChatBtn.addEventListener('click', newChat);
-            $.exportBtn.addEventListener('click', exportChat);
-            
-            document.querySelectorAll('.prompt-card').forEach(card => {
-                card.addEventListener('click', () => {
-                    $.input.value = card.dataset.prompt;
-                    $.input.focus();
-                    autoResize();
-                });
-            });
-            
-            // Keyboard shortcuts
-            document.addEventListener('keydown', e => {
-                if ((e.ctrlKey || e.metaKey) && e.key === 'n') {
-                    e.preventDefault();
-                    newChat();
-                }
-                if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
-                    e.preventDefault();
-                    toggleTheme();
-                }
-            });
-        }
-
-        // ==================== API ====================
-        async function send() {
-            const content = $.input.value.trim();
-            if (!content || state.isLoading) return;
-            
-            addMsg(content, 'user');
-            $.input.value = '';
-            autoResize();
-            $.charCount.textContent = '0';
-            $.welcome.classList.add('hidden');
-            
-            state.history.push({ role: 'user', content });
-            
-            state.isLoading = true;
-            $.sendBtn.disabled = true;
-            addThinking();
-            
-            try {
-                const response = await callAI(content);
-                removeThinking();
-                addMsg(response, 'ai');
-                state.history.push({ role: 'assistant', content: response });
-                saveState();
-            } catch (error) {
-                removeThinking();
-                addMsg(`Error: ${error.message}`, 'error');
-            }
-            
-            state.isLoading = false;
-            $.sendBtn.disabled = false;
-            $.input.focus();
-        }
-
-        async function callAI(msg) {
-            // Your LIVE backend URL
-            const BACKEND_URL = 'https://amolo-backend.onrender.com';
-            
-            const response = await fetch(`${BACKEND_URL}/chat`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    messages: state.history.slice(-10),
-                    model: 'gpt-4o-mini'
-                })
-            });
-            
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.error || 'API request failed');
-            }
-           const data = await response.json();
-           const reply = data.message || "No response from AI";
-
-if (!reply) {
-  add("AI returned empty response.", false);
-  return;
-}
- 
-            
-        }
-
-        // ==================== MESSAGES ====================
-        function addMsg(content, type) {
-            const div = document.createElement('div');
-            div.className = `message-enter flex gap-4 ${type === 'user' ? 'justify-end' : 'justify-start'}`;
-            
-            if (type === 'ai') {
-                const formatted = formatMd(content);
-                div.innerHTML = `
-                    <div class="flex gap-3 max-w-full sm:max-w-3xl">
-                        <div class="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <span class="text-white font-semibold text-sm">A</span>
-                        </div>
-                        <div class="flex-1 min-w-0 message-ai rounded-2xl px-4 sm:px-5 py-3 sm:py-4">
-                            <div class="message-content text-gray-800 text-sm sm:text-base break-words">
-                                ${formatted}
-                            </div>
-                            <div class="flex items-center gap-3 mt-3 pt-3 border-t border-gray-200">
-                                <button class="copy-msg text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1" data-content="${escHtml(content)}">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-                                    </svg>
-                                    Copy
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            } else if (type === 'user') {
-                div.innerHTML = `
-                    <div class="message-user rounded-2xl px-4 sm:px-5 py-3 max-w-full sm:max-w-2xl break-words">
-                        <p class="text-white whitespace-pre-wrap text-sm sm:text-base">${escHtml(content)}</p>
-                    </div>
-                `;
-            } else {
-                div.innerHTML = `
-                    <div class="bg-red-50 border border-red-200 rounded-2xl px-4 sm:px-5 py-4 max-w-full sm:max-w-2xl break-words">
-                        <p class="text-red-800 text-sm">${escHtml(content)}</p>
-                    </div>
-                `;
-            }
-            
-            $.messages.appendChild(div);
-            scroll();
-            
-            div.querySelectorAll('.copy-msg').forEach(btn => {
-                btn.addEventListener('click', () => copy(btn.dataset.content, btn));
-            });
-            
-            div.querySelectorAll('.copy-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const code = btn.closest('.code-block').querySelector('pre').textContent;
-                    copy(code, btn);
-                });
-            });
-        }
-
-        function formatMd(text) {
-            text = text.replace(/```(\w+)?\n([\s\S]+?)```/g, (match, lang, code) => {
-                return `<div class="code-block">
-                    <div class="code-header">
-                        <span class="code-lang">${lang || 'code'}</span>
-                        <button class="copy-btn">Copy</button>
-                    </div>
-                    <pre>${escHtml(code.trim())}</pre>
-                </div>`;
-            });
-            
-            if (typeof marked !== 'undefined') {
-                try {
-                    return marked.parse(text);
-                } catch (e) {
-                    return text.replace(/\n/g, '<br>');
-                }
-            }
-            
-            return text.replace(/\n/g, '<br>');
-        }
-
-        function addThinking() {
-            const div = document.createElement('div');
-            div.id = 'thinking';
-            div.className = 'message-enter flex gap-3';
-            div.innerHTML = `
-                <div class="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center flex-shrink-0">
-                    <span class="text-white font-semibold text-sm">A</span>
-                </div>
-                <div class="message-ai rounded-2xl px-5 py-4">
-                    <div class="flex gap-1">
-                        <div class="w-2 h-2 bg-gray-400 rounded-full thinking-dot"></div>
-                        <div class="w-2 h-2 bg-gray-400 rounded-full thinking-dot"></div>
-                        <div class="w-2 h-2 bg-gray-400 rounded-full thinking-dot"></div>
-                    </div>
-                </div>
-            `;
-            $.messages.appendChild(div);
-            scroll();
-        }
-
-        function removeThinking() {
-            const t = document.getElementById('thinking');
-            if (t) t.remove();
-        }
-
-        // ==================== UTILS ====================
-        function loadMessages() {
-            if (state.messages.length === 0) {
-                $.welcome.classList.remove('hidden');
-            } else {
-                $.welcome.classList.add('hidden');
-                state.messages.forEach(msg => {
-                    addMsg(msg.content, msg.type);
-                    if (msg.type !== 'error') {
-                        state.history.push({
-                            role: msg.type === 'user' ? 'user' : 'assistant',
-                            content: msg.content
-                        });
-                    }
-                });
-            }
-        }
-
-        function saveState() {
-            state.messages = state.history.map(msg => ({
-                content: msg.content,
-                type: msg.role === 'user' ? 'user' : 'ai'
-            }));
-            localStorage.setItem('amolo_msgs', JSON.stringify(state.messages));
-        }
-
-        function newChat() {
-            if ($.messages.children.length > 1 && confirm('Start new chat? Current conversation will be cleared.')) {
-                state.messages = [];
-                state.history = [];
-                $.messages.innerHTML = '';
-                $.welcome.classList.remove('hidden');
-                localStorage.removeItem('amolo_msgs');
-                $.input.focus();
-            }
-        }
-
-        function exportChat() {
-            let txt = `AMOLO.AI Chat Export\n${'='.repeat(50)}\nDate: ${new Date().toLocaleString()}\n\n`;
-            state.history.forEach(msg => {
-                txt += `${msg.role === 'user' ? 'You' : 'AMOLO.AI'}:\n${msg.content}\n\n`;
-            });
-            const blob = new Blob([txt], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `amolo-chat-${Date.now()}.txt`;
-            a.click();
-            URL.revokeObjectURL(url);
-            notify('Chat exported!', 'success');
-        }
-
-        function toggleTheme() {
-            state.darkMode = !state.darkMode;
-            $.app.classList.toggle('dark');
-            localStorage.setItem('amolo_theme', state.darkMode ? 'dark' : 'light');
-        }
-
-        function autoResize() {
-            $.input.style.height = 'auto';
-            $.input.style.height = Math.min($.input.scrollHeight, 200) + 'px';
-        }
-
-        function scroll() {
-            $.messages.parentElement.scrollTop = $.messages.parentElement.scrollHeight;
-        }
-
-        function escHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function copy(text, btn) {
-            navigator.clipboard.writeText(text).then(() => {
-                const orig = btn.textContent;
-                btn.textContent = 'Copied!';
-                btn.classList.add('copied');
-                setTimeout(() => {
-                    btn.textContent = orig;
-                    btn.classList.remove('copied');
-                }, 2000);
-            });
-        }
-
-        function notify(msg, type = 'info') {
-            const colors = {
-                success: 'bg-green-500',
-                error: 'bg-red-500',
-                info: 'bg-blue-500'
-            };
-            const div = document.createElement('div');
-            div.className = `${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg fade-in text-sm`;
-            div.textContent = msg;
-            $.notifContainer.appendChild(div);
-            setTimeout(() => {
-                div.style.opacity = '0';
-                setTimeout(() => div.remove(), 300);
-            }, 3000);
-        }
-
-        // ==================== START ====================
-        init();
-    const chatBox = document.getElementById("messages");
-const input = document.getElementById("message-input");
-const sendBtn = document.getElementById("send-btn");
+<script>
+const chat = document.getElementById("chat");
 
 function addMessage(text, me=false){
-    const div = document.createElement("div");
-    div.className = me ? "text-right my-2" : "text-left my-2";
-    div.innerHTML = `<div class="${me?'bg-blue-600 text-white':'bg-gray-200'} inline-block px-4 py-2 rounded-lg max-w-xl">${text}</div>`;
-    chatBox.appendChild(div);
-    chatBox.scrollTop = chatBox.scrollHeight;
+ const div=document.createElement("div");
+ div.className = me ? "text-right" : "text-left";
+ div.innerHTML = `
+   <div class="${me?'bg-black text-white':'bg-gray-300'} inline-block px-4 py-2 rounded-lg max-w-xl">
+   ${text}
+   </div>`;
+ chat.appendChild(div);
+ chat.scrollTop = chat.scrollHeight;
 }
 
 async function send(){
-    const msg = input.value.trim();
-    if(!msg) return;
+ const input=document.getElementById("msg");
+ const text=input.value.trim();
+ if(!text) return;
 
-    addMessage(msg,true);
-    input.value="";
+ addMessage(text,true);
+ input.value="";
 
-    const thinking = document.createElement("div");
-    thinking.innerHTML = `<div class="bg-gray-200 inline-block px-4 py-2 rounded-lg">...</div>`;
-    chatBox.appendChild(thinking);
+ const loading=document.createElement("div");
+ loading.innerHTML=`<div class="bg-gray-300 inline-block px-4 py-2 rounded-lg">Thinking...</div>`;
+ chat.appendChild(loading);
 
-    try{
-        const res = await fetch("https://amolo-backend.onrender.com/api/chat",{
-            method:"POST",
-            headers:{ "Content-Type":"application/json" },
-            body: JSON.stringify({
-                messages:[{role:"user",content:msg}]
-            })
-        });
+ try{
+  const res=await fetch("https://amolo-backend.onrender.com/api/chat",{
+   method:"POST",
+   headers:{ "Content-Type":"application/json" },
+   body:JSON.stringify({
+     messages:[{role:"user",content:text}]
+   })
+  });
 
-        const data = await res.json();
-        thinking.remove();
+  const data=await res.json();
+  loading.remove();
 
-        if(data.message){
-            addMessage(data.message,false);
-        }else{
-            addMessage("AI returned no response.",false);
-        }
+  if(data.message){
+   addMessage(data.message,false);
+  }else{
+   addMessage("AI returned no response.",false);
+  }
 
-    }catch(err){
-        thinking.remove();
-        addMessage("Server connection error.",false);
-    }
+ }catch(err){
+  loading.remove();
+  addMessage("Server connection failed.",false);
+ }
 }
 
-sendBtn.onclick = send;
-input.addEventListener("keydown", e=>{
-    if(e.key==="Enter" && !e.shiftKey){
-        e.preventDefault();
-        send();
-    }
+document.getElementById("msg").addEventListener("keydown",e=>{
+ if(e.key==="Enter" && !e.shiftKey){
+  e.preventDefault();
+  send();
+ }
 });
+</script>
+
+</body>
+</html>
