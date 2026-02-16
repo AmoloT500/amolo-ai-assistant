@@ -644,6 +644,57 @@ if (!reply) {
 
         // ==================== START ====================
         init();
-    </script>
-</body>
-</html>
+    const chatBox = document.getElementById("messages");
+const input = document.getElementById("message-input");
+const sendBtn = document.getElementById("send-btn");
+
+function addMessage(text, me=false){
+    const div = document.createElement("div");
+    div.className = me ? "text-right my-2" : "text-left my-2";
+    div.innerHTML = `<div class="${me?'bg-blue-600 text-white':'bg-gray-200'} inline-block px-4 py-2 rounded-lg max-w-xl">${text}</div>`;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+async function send(){
+    const msg = input.value.trim();
+    if(!msg) return;
+
+    addMessage(msg,true);
+    input.value="";
+
+    const thinking = document.createElement("div");
+    thinking.innerHTML = `<div class="bg-gray-200 inline-block px-4 py-2 rounded-lg">...</div>`;
+    chatBox.appendChild(thinking);
+
+    try{
+        const res = await fetch("https://amolo-backend.onrender.com/api/chat",{
+            method:"POST",
+            headers:{ "Content-Type":"application/json" },
+            body: JSON.stringify({
+                messages:[{role:"user",content:msg}]
+            })
+        });
+
+        const data = await res.json();
+        thinking.remove();
+
+        if(data.message){
+            addMessage(data.message,false);
+        }else{
+            addMessage("AI returned no response.",false);
+        }
+
+    }catch(err){
+        thinking.remove();
+        addMessage("Server connection error.",false);
+    }
+}
+
+sendBtn.onclick = send;
+input.addEventListener("keydown", e=>{
+    if(e.key==="Enter" && !e.shiftKey){
+        e.preventDefault();
+        send();
+    }
+});
