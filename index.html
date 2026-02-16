@@ -306,15 +306,49 @@
         }
 
         // ==================== MESSAGE HANDLING ====================
-        async function sendMessage() {
-            const content = $.input.value.trim();
-            if (!content || state.isLoading) return;
-            
-            if (!state.apiKey) {
-                $.apiBanner.classList.remove('hidden');
-                showNotification('Please connect your OpenAI API key first', 'error');
-                return;
-            }
+        async function callOpenAI(userMessage) {
+
+    const msg = userMessage.toLowerCase();
+    let reply = "";
+
+    // greetings
+    if (msg.includes("hello") || msg.includes("hi")) {
+        reply = "Hello 👋 Welcome to AMOLO.AI — Global intelligence built from Africa. How can I assist you today?";
+    }
+
+    // who are you
+    else if (msg.includes("who are you") || msg.includes("what is amolo")) {
+        reply = "I am AMOLO.AI, a next-generation artificial intelligence platform designed to support education, health, agriculture, research and innovation globally.";
+    }
+
+    // health
+    else if (msg.includes("health") || msg.includes("hospital") || msg.includes("first aid")) {
+        reply = "🏥 AMOLO HealthHub provides guidance on first aid, clinical knowledge, emergency response and public health education. Full clinical AI will be activated soon.";
+    }
+
+    // agriculture
+    else if (msg.includes("farm") || msg.includes("agriculture") || msg.includes("crops")) {
+        reply = "🌾 AgriHub supports modern farming with climate intelligence, soil management, livestock guidance and agribusiness insights for Africa and the world.";
+    }
+
+    // education
+    else if (msg.includes("school") || msg.includes("education") || msg.includes("study")) {
+        reply = "🎓 AMOLO Academic Hub helps students and teachers with research, revision, lesson planning and advanced learning tools.";
+    }
+
+    // technology
+    else if (msg.includes("ai") || msg.includes("technology")) {
+        reply = "AMOLO is building a global artificial intelligence ecosystem combining health, agriculture, education and innovation into one intelligent system.";
+    }
+
+    // default response
+    else {
+        reply = "AMOLO is currently running in demonstration intelligence mode. Full AI capabilities are being activated. Ask about health, agriculture, education, or technology.";
+    }
+
+    return reply;
+}
+
             
             // Add user message
             addMessage(content, 'user');
